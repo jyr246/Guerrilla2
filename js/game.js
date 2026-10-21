@@ -20,7 +20,6 @@ function nz(f,d,v,ty,t0){const c=t0||AC.currentTime;if(!NB){NB=AC.createBuffer(1
  const s=AC.createBufferSource(),fl=AC.createBiquadFilter(),gn=AC.createGain();s.buffer=NB;fl.type=ty;fl.frequency.value=f;gn.gain.setValueAtTime(v,c);gn.gain.exponentialRampToValueAtTime(.0001,c+d);s.connect(fl);fl.connect(gn);gn.connect(AC.destination);s.start(c,Math.random());s.stop(c+d)}
 function nt_(f,t,d,ty,v){const o=AC.createOscillator(),gn=AC.createGain();o.type=ty;o.frequency.value=f;gn.gain.setValueAtTime(.0001,t);gn.gain.exponentialRampToValueAtTime(v,t+.03);gn.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(gn);gn.connect(AC.destination);o.start(t);o.stop(t+d+.05)}
 function civSnd(ci){if(!AC||MUTE||(LT.civ||0)>AC.currentTime-.4)return;LT.civ=AC.currentTime;const c=CS[ci],t=AC.currentTime;c.p.forEach((iv,i)=>nt_(c.f*2**(iv/12),t+i*.11,.28,c.t,.07))}
-// música procedural (calma en exploración, tambores y ritmo en batalla) y ambiente por mapa
 const SC=[0,2,3,5,7,9,10,12],ROOT=[146.8,130.8,123.5,138.6,110,146.8,116.5,123.5];
 function music(){if(!AC||!MU||MUTE)return;const t=AC.currentTime,war=S&&!S.over&&S.t-S.lb<700,bt=war?.2:.5,r=ROOT[MAP]*(war?.84:1);if(nt<t)nt=t+.05;
  while(nt<t+.5){const b=bs++%16;
@@ -75,7 +74,6 @@ function newGame(ci){mkTerrain(MAP);
  cam.x=X(bases[0])-innerWidth/2/cam.z;cam.y=Y(bases[0])-innerHeight/2/cam.z;clamp();ex.fill(0);fog();
 }
 
-// ---------- niebla de guerra y minimapa ----------
 const fogC=document.createElement('canvas');fogC.width=fogC.height=N;
 const fg=fogC.getContext('2d'),fi=fg.createImageData(N,N),ex=new Uint8Array(N*N),vs=new Uint8Array(N*N);
 const vis=e=>vs[Math.min(N-1,e.y/T|0)*N+Math.min(N-1,e.x/T|0)];
@@ -86,7 +84,6 @@ function fog(){vs.fill(0);
  for(let i=0;i<N*N;i++)fi.data[i*4+3]=vs[i]?0:ex[i]?140:255;
  fg.putImageData(fi,0,0)}
 
-// ---------- lógica ----------
 function mvTo(a,x,y,s){const dx=x-a.x,dy=y-a.y,d=Math.hypot(dx,dy);if(d>s){a.x+=dx/d*s;a.y+=dy/d*s}return d}
 function gather(a){const m=civ(a.p).gm||{};
  if(a.ret||a.carry.n>=10||(!a.nd&&a.carry.n)){
@@ -158,7 +155,6 @@ function tick(){S.t++;
  if(!tc(1)||S.hold[0]>=HOLD){S.over=1;snd('win');showMenu('🏆 ¡Victoria!')}
  else if(!tc(0)||S.hold[1]>=HOLD){S.over=1;snd('lose');showMenu('💀 Derrota')}}
 
-// ---------- entrada táctil / ratón ----------
 const P=new Map();let mvd=0,pd=0,lp,bx=null;
 function clamp(){cam.z=Math.min(2,Math.max(.6,cam.z));const vw=innerWidth/cam.z,vh=innerHeight/cam.z,ax=-W/2-100,ay=-150;
  cam.x=Math.max(ax,Math.min(Math.max(ax,W/2+100-vw),cam.x));cam.y=Math.max(ay,Math.min(Math.max(ay,W/2+150-vh),cam.y))}
@@ -191,7 +187,6 @@ function tap(px,py){
   return}
  S.sel=e?[e]:[]}
 
-// ---------- interfaz ----------
 const cost=c=>Object.entries(c).map(([k,v])=>RN[k]+v).join(' ');
 const bt=(a,l,c)=>`<button data-a="${a}">${l}${c?`<small>${cost(c)}</small>`:''}</button>`;
 let lt='',lb='';
@@ -209,8 +204,7 @@ function hud(){const r=S.res[0],pc=h=>Math.min(100,h/HOLD*100|0);
   if(s.k=='cas')h+=bt('t:esp','★★ Élite '+UU[S.civ[0]].n,ud(0,'esp').cost)+bt('t:uni','★ '+UU[S.civ[0]].n,UU[S.civ[0]].cost);
   if(s.q&&s.q.length)h+=`<span>⏳ ${s.q.length}</span>`}
  h+=bt('army','⚔ Ejército')+(S.u.some(u=>u.p==0&&u.k=='cha')?bt('sha','🔮 Chamanes'):'')+bt('idle','👷 Libres')+(S.pl?bt('x','✖ Cancelar'):'')+bt('music',MU?'🎵':'🔕')+bt('mute',MUTE?'🔇':'🔊')+bt('menu','☰ Menú');
- if(h!=lb)$('bot').innerHTML=lb=h}
-$('bot').onclick=e=>{initAudio();snd('click');const a=e.target.closest('button')?.dataset.a;if(!a||!S)return;const[k,v]=a.split(':');
+ if(h!=lb)$('bot').innerHTML=lb=h}$('bot').onclick=e=>{initAudio();snd('click');const a=e.target.closest('button')?.dataset.a;if(!a||!S)return;const[k,v]=a.split(':');
  if(k=='t')train(0,S.sel[0],v);
  else if(k=='a')trainAge(0,S.sel[0]);
  else if(k=='r')tech(0,S.sel[0],v);
@@ -226,7 +220,6 @@ function showMenu(msg=''){MSG=msg;menu.hidden=false;
  menu.innerHTML=`<img src="assets/titulo.png" style="max-width:240px;border-radius:10px"><h1>GUERRILLA</h1>${msg?`<h2>${msg}</h2>`:''}<p>${LORE}</p><p>Dificultad:</p><div id="dif">${['Fácil','Normal','Difícil'].map((n,i)=>`<button data-d="${i}" style="border-color:${i==DIF?'#c46bff':'#6b5a8e'}">${n}</button>`).join('')}</div><p>Mapa:</p><div id="dif" style="flex-wrap:wrap">${MAPS.map((n,i)=>`<button data-m="${i}" style="border-color:${i==MAP?'#c46bff':'#6b5a8e'}">${n.t?`<img src="assets/mapa_${n.t}.png" style="width:70px;height:62px;object-fit:cover;border-radius:4px">`:''}${n.n}</button>`).join('')}</div><p>Elige tu civilización:</p><div id="civs">${CIVS.map((c,i)=>`<button data-i="${i}" style="border-color:${c.c}">${CP[i]?`<img src="assets/civ_${CP[i]}.png" style="width:100%;border-radius:6px">`:''}<b>${c.n}</b><small>${c.b}</small></button>`).join('')}</div>`}
 menu.onclick=e=>{initAudio();const b=e.target.closest('button');if(!b)return;if(b.dataset.d){DIF=+b.dataset.d;showMenu(MSG)}else if(b.dataset.m){MAP=+b.dataset.m;showMenu(MSG)}else{newGame(+b.dataset.i);menu.hidden=true;snd('horn');civSnd(S.civ[0])}};
 
-// ---------- dibujo isométrico ----------
 function mkTerrain(m=0){const M=MAPS[m];terr=document.createElement('canvas');terr.width=terr.height=W;const t=terr.getContext('2d');
  for(let y=0;y<N;y++)for(let x=0;x<N;x++){t.fillStyle=Math.random()<.1?M.c:(x+y)%2?M.a:M.b;t.fillRect(x*T,y*T,T,T)}}
 const ring=(x,y,r,c,w=2)=>{g.strokeStyle=c;g.lineWidth=w;g.beginPath();g.arc(x,y,r,0,7);g.stroke()};
@@ -291,7 +284,6 @@ function draw(){const d=devicePixelRatio||1,z=cam.z,sc=d*z;
  for(const e of L){const x=X(e),y=Y(e);if(e.mr)dR(e,x,y);else if(e.t)dN(e,x,y);else if(e.q)dB(e,x,y);else dU(e,x,y)}
  g.lineWidth=1.5;for(const f of S.fx){g.strokeStyle=f.c||'#ffd';g.beginPath();g.moveTo(X(f.a),Y(f.a)-8);g.lineTo(X(f.b),Y(f.b)-8);g.stroke()}
  iso();g.drawImage(fogC,0,0,W,W);
- // minimapa isométrico
  const m=MM(),k=m.s/W,mx=m.x+m.s/2;g.setTransform(d,0,0,d,0,0);g.fillStyle='rgba(10,8,20,.85)';g.fillRect(m.x,m.y,m.s,m.s/2);
  g.setTransform(d*k*.5,d*k*.25,-d*k*.5,d*k*.25,d*mx,d*m.y);g.fillStyle=MAPS[MAP].a;g.fillRect(0,0,W,W);
  g.setTransform(d,0,0,d,0,0);
@@ -300,7 +292,6 @@ function draw(){const d=devicePixelRatio||1,z=cam.z,sc=d*z;
  g.setTransform(d*k*.5,d*k*.25,-d*k*.5,d*k*.25,d*mx,d*m.y);g.drawImage(fogC,0,0,W,W);
  g.setTransform(d,0,0,d,0,0);g.strokeStyle='#fff';g.lineWidth=1;g.strokeRect(mx+cam.x*k,m.y+cam.y*k,innerWidth/z*k,innerHeight/z*k);g.strokeRect(m.x,m.y,m.s,m.s/2);if(bx){g.fillStyle='rgba(120,255,120,.15)';g.fillRect(bx.x0,bx.y0,bx.x1-bx.x0,bx.y1-bx.y0);g.strokeStyle='#8f8';g.strokeRect(bx.x0,bx.y0,bx.x1-bx.x0,bx.y1-bx.y0)}}
 
-// ---------- intro con narrador ----------
 function intro(){const o=document.createElement('div');o.id='intro';
  o.innerHTML='<svg id="crack" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="50,0 47,18 54,32 46,48 55,63 48,80 52,100" fill="none" stroke="#e0b0ff" stroke-width="1.2" style="filter:drop-shadow(0 0 3px #c46bff)"/></svg><div id="sub"><b style="font-size:32px;color:#c46bff">GUERRILLA</b><br>La Grieta del Mundo</div><button id="go">▶ Escuchar la historia</button><button id="skip">Saltar</button>';
  o.style.backgroundImage='linear-gradient(#0003,#07050dd0),url(assets/titulo.png)';document.body.appendChild(o);let i=0,dead=0,tm;const cl=['#3a5a2a','#2a5a4a','#3a1a5a','#5a1a8a','#6a2aa0','#5a2a2a','#4a3a1a','#6a1a1a','#7a0a0a'];
@@ -311,7 +302,6 @@ function intro(){const o=document.createElement('div');o.id='intro';
   tm=setTimeout(go,s.length*90+3000)};
  $('go').onclick=()=>{initAudio();$('go').remove();next()};$('skip').onclick=end}
 
-// ---------- bucle ----------
 function resize(){const d=devicePixelRatio||1;cv.width=innerWidth*d;cv.height=innerHeight*d;if(S)clamp()}
 addEventListener('resize',resize);resize();mkTerrain(0);showMenu();intro();
 let lastT=0,acc=0;
